@@ -46,3 +46,10 @@ cc_prebuilt_binary {
     defaults: ["openquest_controller_binary_defaults"],
     srcs: ["prebuilts/arm64/oq-controller-replay"],
 }
+
+// Experimental stdin camera/SyncBoss bridge. This has no automatic hardware owner.
+cc_prebuilt_binary {
+    name: "oq-controller-live",
+    defaults: ["openquest_controller_binary_defaults"],
+    srcs: ["prebuilts/arm64/oq-controller-live"],
+}

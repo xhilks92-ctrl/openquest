@@ -2,8 +2,8 @@
 
 Native Android arm64 controller pose estimation, a versioned local sensor/pose socket, and
 **opt-in LineageOS system-ext packaging**. This is an integration building block, not a complete
-LineageOS VR stack. There is no Monado/OpenXR driver or direct camera/SyncBoss producer connected
-to this service yet. Installing it alone does not make VR applications receive controller poses.
+LineageOS VR stack. There is no Monado/OpenXR driver. An experimental direct camera/SyncBoss stdin bridge
+is available for bounded hardware bring-up; it is not an automatically enabled ROM service. Installing it alone does not make VR applications receive controller poses.
 
 ## Verified
 
@@ -138,3 +138,38 @@ This mode reads existing recordings, does not control cameras, and never injects
 See [the replay research notes](../../docs/controller-optical-prototype.md) for the earlier
 recording results and limits. This contribution deliberately exposes the unfinished links
 instead of declaring controller 6DoF or the whole LineageOS port complete.
+
+## Experimental direct input
+
+A six-second stock-firmware ownership-handoff test delivered 105 synchronized four-camera
+sets to the service with both IMUs and no Meta userspace producer. It produced **zero valid
+controller poses**. Input transport is demonstrated; optical live tracking is still under
+validation. Camera/IMU availability must not be presented as a completed 6DoF fix.
+
+
+`oq-controller-live` consumes `cam_kernel` with `CAMKERNEL_CONTROLLER_STREAM=1` and
+`CAMKERNEL_PERIOD_US=40000`. The camera process emits raw SyncBoss packets and only the
+short IR exposures from all four cameras. The bridge rectifies head gyro using private
+factory calibration, calibrates the right controller gyro, learns the exposure/frame-counter
+correspondence, and feeds the existing socket service. Its pending frame queue is limited to
+one batch; superseded frames are dropped rather than building an unbounded delay.
+
+Build the camera on macOS or Linux with `components/camera/build-android.sh`. It fetches only
+seven UAPI headers from the pinned official Quest kernel, not a full kernel checkout.
+
+Bridge arguments:
+
+```
+oq-controller-live CAMERAS MODEL GYRO_CALIBRATION HEAD_FACTORY_CALIBRATION SOCKET OUTPUT_CSV
+```
+
+Do not start the camera while stock tracking/camera/sensor services own the hardware.
+Hardware bring-up currently requires a supervised, temporary ownership handoff with a
+separate watchdog restoring those services. The bridge itself does not stop services or
+change SELinux. No automatic camera launch or hardware SELinux policy is included.
+Keep all per-unit factory calibration private.
+
+The clock conversion uses a causal half-second receipt prefix, then freezes its offset.
+Long-session drift and continuous runtime recovery are not validated. Poses remain
+head-relative controller model-centroid poses; this does not provide world-space head
+tracking, grip/aim transforms, or application-facing OpenXR delivery.

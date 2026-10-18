@@ -27,10 +27,11 @@ PY
     unzip -q -o "$ARCHIVE" 'OpenCV-android-sdk/sdk/native/jni/include/*' 'OpenCV-android-sdk/sdk/native/libs/arm64-v8a/*' 'OpenCV-android-sdk/sdk/etc/licenses/*' -d "$CACHE"
 fi
 LIB="$SDK/sdk/native/libs/arm64-v8a"
-for PROGRAM in service replay selftest; do
+for PROGRAM in service replay selftest live; do
     "$CXX" -std=c++17 -O2 -fPIC -Wall -Wextra -I"$SDK/sdk/native/jni/include" "$ROOT/src/tracker.cpp" "$ROOT/src/$PROGRAM.cpp" -L"$LIB" -lopencv_java4 -o "$ROOT/prebuilts/arm64/oq-controller-$PROGRAM"
 done
 "$CXX" -std=c++17 -O2 -I"$ROOT/src" "$ROOT/tests/socket_test.cpp" -o "$ROOT/prebuilts/arm64/oq-controller-socket-test"
+"$CXX" -std=c++17 -O2 -Wall -Wextra -I"$SDK/sdk/native/jni/include" -I"$ROOT/src" "$ROOT/tests/live_input_test.cpp" -L"$LIB" -lopencv_java4 -o "$ROOT/prebuilts/arm64/oq-controller-input-test"
 cp "$LIB/libopencv_java4.so" "$ROOT/prebuilts/arm64/"
 cp "$TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" "$ROOT/prebuilts/arm64/"
 cp "$SDK/sdk/etc/licenses/"* "$ROOT/prebuilts/licenses/"

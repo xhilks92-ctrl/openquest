@@ -1,9 +1,9 @@
 name: Controller tracking
 on:
   pull_request:
-    paths: ['components/controller_tracking/**', 'tools/controller_tracking/**', 'tests/test_controller_pose*', '.github/workflows/controller-tracking.yml']
+    paths: ['components/camera/src/**', 'components/camera/build-android.sh', 'components/controller_tracking/**', 'tools/controller_tracking/**', 'tests/test_controller_pose*', '.github/workflows/controller-tracking.yml']
   push:
-    paths: ['components/controller_tracking/**', 'tools/controller_tracking/**', 'tests/test_controller_pose*', '.github/workflows/controller-tracking.yml']
+    paths: ['components/camera/src/**', 'components/camera/build-android.sh', 'components/controller_tracking/**', 'tools/controller_tracking/**', 'tests/test_controller_pose*', '.github/workflows/controller-tracking.yml']
 permissions:
   contents: read
 jobs:

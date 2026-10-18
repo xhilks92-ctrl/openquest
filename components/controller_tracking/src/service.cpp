@@ -126,6 +126,7 @@ void session(int fd, const oq::Config &config, bool fixed_head) {
   oq::Gyro controller, head;
   std::vector<uint8_t> payload;
   uint64_t last_frame = 0;
+  unsigned diagnostic_frames = 0;
   while (running) {
     oq::wire::Header header;
     if (!read_exact(fd, &header, sizeof(header)))
@@ -155,6 +156,12 @@ void session(int fd, const oq::Config &config, bool fixed_head) {
         throw std::runtime_error("Nonmonotonic frame");
       last_frame = header.timestamp_ns;
       auto views = parse_views(config, header, payload);
+      if (std::getenv("OQ_TRACKING_DIAGNOSTICS") && diagnostic_frames++ < 5) {
+        std::cerr << "rays";
+        for (auto &v : views)
+          std::cerr << " cam" << v.camera << "=" << v.rays.size();
+        std::cerr << "\n";
+      }
       auto pose = tracker.update(header.timestamp_ns * 1e-9, views, controller,
                                  fixed_head ? nullptr : &head);
       oq::wire::Pose result{};
